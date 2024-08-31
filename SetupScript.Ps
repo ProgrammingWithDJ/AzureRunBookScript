@@ -1,0 +1,18 @@
+
+
+$ServicePrincipalId = 'xxx' #Copy from the Identity blade in Azure RunBook
+$ResourceGroupName = 'RunBookResourceGroup' #Copy from the overveiw in Azure RunBook
+New-AzRoleAssignment -ObjectId $ServicePrincipalId -ResourceGroupName $ResourceGroupName -RoleDefinitionName Reader
+New-AzRoleAssignment -ObjectId $ServicePrincipalId -ResourceGroupName $ResourceGroupName -RoleDefinitionName 'Automation Job Operator'
+New-AzRoleAssignment -ObjectId $ServicePrincipalId -ResourceGroupName $ResourceGroupName -RoleDefinitionName 'Automation Runbook Operator'
+
+ 
+Connect-AzureAD
+$GraphResource = Get-AzureADServicePrincipal -Filter "AppId eq '00000003-0000-0000-c000-000000000000'"  #Graph API App Id is same for everyone
+$Permission = $GraphResource.AppRoles | Where-Object {$_.value -eq 'User.Read.All'}
+New-AzureADServiceAppRoleAssignment -ObjectId $ServicePrincipalId -PrincipalId $ServicePrincipalId -Id $Permission.Id -ResourceId $GraphResource.ObjectId
+
+Connect-MgGraph
+$GraphResource = Get-MgServicePrincipal -Filter "AppId eq '00000003-0000-0000-c000-000000000000'"
+$Permission = $GraphResource.AppRoles | Where-Object {$_.value -eq 'User.Read.All'}
+New-MgServicePrincipalAppRoleAssignment -ServicePrincipalId $ServicePrincipalId -PrincipalId $ServicePrincipalId -AppRoleId $Permission.Id -ResourceId $GraphResource.Id
