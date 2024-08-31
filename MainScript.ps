@@ -1,0 +1,11 @@
+try {
+    #Get the token using a managed identity and connect to graph using that token
+    Connect-AzAccount -Identity -ErrorAction Stop | Out-Null
+    $AccessToken = Get-AzAccessToken -ResourceUrl "https://graph.microsoft.com" -ErrorAction Stop 
+   
+   Connect-MgGraph -AccessToken ($AccessToken.Token | ConvertTo-SecureString -AsPlainText -Force) -ErrorAction Stop | Out-Null
+ 
+    Get-MgUser -UserId xxx@xx.com | select DisplayName, UserPrincipalName, UserType, AccountEnabled
+} catch {
+    Write-Error $_.Exception.Message -ErrorAction Stop
+} 
